@@ -3,17 +3,20 @@
 #include <fmt/format.h>
 #include <future>
 #include <queue>
+#include <syslog.h>
 
 UTMDashboard::UTMDashboard(uint64_t port) : m_port{port} {
+    openlog("UTMDashboard", LOG_PID | LOG_CONS, LOG_USER);
     std::ifstream file("utms.json");
     if (!file.is_open()) {
         auto err = errno;
+        syslog(LOG_ERR, "Не могу открыть список УТМ: %s", strerror(err));
         throw std::runtime_error(::fmt::format("Failed to open utms.json: {}", strerror(err)));
     }
 
     file >> m_utms;
-    std::cout << "UTMs loaded: " << m_utms.size() << "\n";
-    std::cout << "UTMs: " << m_utms.dump(2) << "\n";
+    syslog(LOG_INFO, "Загружен список УТМ из %lu шт.", m_utms.size());
+    syslog(LOG_INFO, "УТМы:\n%s", m_utms.dump(2).c_str());
     file.close();
 }
 std::time_t UTMDashboard::parse_date_time(const std::string &s) {
@@ -111,11 +114,14 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
                              name_link, owner_id, rsa_start, rsa_class, rsa_expire, gost_start, gost_class, gost_expire,
                              fact_address);
 
+        syslog(LOG_DEBUG, "Сформирован ответ для '%s' -> '%s': %s", name.data(), ip.data(), html.c_str());
+
         return html;
     } catch (const std::exception &ex) {
         std::string link_app = fmt::format("http://{}:8080/app/", ip);
         std::string name_link = fmt::format("<a href='{}' target='_blank'>{}</a>", link_app, name);
         html = ::fmt::format("<tr><td>{}</td><td class='danger' colspan='6'>Error: {}</td></tr>", name_link, ex.what());
+        syslog(LOG_ERR, "Ошибка при обработке '%s' -> '%s': %s", name.data(), ip.data(), ex.what());
         return html;
     }
 }
@@ -169,6 +175,6 @@ void UTMDashboard::run() {
         }
     });
 
-    std::cout << "Server started: http://127.0.0.1:" << m_port << std::endl;
+    syslog(LOG_NOTICE, "Запущен сервер на http://127.0.0.1:%d", static_cast<int>(m_port));
     m_server.listen("0.0.0.0", static_cast<int>(m_port));
 }
