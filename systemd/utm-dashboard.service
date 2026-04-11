@@ -1,0 +1,14 @@
+[Unit]
+Description=UTM Dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/utm-dashboard
+Restart=always
+RestartSec=3
+User=root
+
+[Install]
+WantedBy=multi-user.target
