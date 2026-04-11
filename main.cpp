@@ -77,6 +77,7 @@ std::string get_detail_utm(std::string_view ip, std::string_view name) {
     try {
         std::string link_key = ::fmt::format("http://{}:8080/api/info/list", ip);
         std::string link_rsa = fmt::format("http://{}:8080/api/rsa", ip);
+        std::string link_app = fmt::format("http://{}:8080/app/", ip);
 
         auto key_json = nlohmann::json::parse(httpGet(link_key));
         auto rsa_json = nlohmann::json::parse(httpGet(link_rsa));
@@ -98,8 +99,9 @@ std::string get_detail_utm(std::string_view ip, std::string_view name) {
             }
         }
 
+        std::string name_link = fmt::format("<a href='{}' target='_blank'>{}</a>", link_app, name);
+
         html = ::fmt::format("<tr>"
-                             "<td>{}</td>"
                              "<td>{}</td>"
                              "<td>{}</td>"
                              "<td>{}</td>"
@@ -108,12 +110,12 @@ std::string get_detail_utm(std::string_view ip, std::string_view name) {
                              "<td class='{}'>{}</td>"
                              "<td>{}</td>"
                              "</tr>",
-                             name, ip, owner_id, rsa_start, rsa_class, rsa_expire, gost_start, gost_class, gost_expire,
+                             name_link, owner_id, rsa_start, rsa_class, rsa_expire, gost_start, gost_class, gost_expire,
                              fact_address);
 
         return html;
     } catch (const std::exception &ex) {
-        html = ::fmt::format("<tr><td>{}</td><td>{}</td><td colspan='6'>Error: {}</td></tr>", name, ip, ex.what());
+        html = ::fmt::format("<tr><td>{}</td><td class='danger' colspan='6'>Error: {}</td></tr>", name, ex.what());
         return html;
     }
 }
@@ -151,7 +153,6 @@ int main() {
                                "<table>"
                                "<tr>"
                                "<th>Имя</th>"
-                               "<th>IP</th>"
                                "<th>ID ключа</th>"
                                "<th>RSA записан</th>"
                                "<th>RSA истекает</th>"
