@@ -5,6 +5,10 @@
 #include <stdexcept>
 #include <string>
 #define CPPHTTPLIB_THREAD_POOL_COUNT 4
+#include <future>
+#include <queue>
+
+
 #include "httplib.h"
 
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
@@ -14,7 +18,7 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
     return totalSize;
 }
 
-std::string httpGet(const std::string &url) {
+std::string httpGet(std::string const &url) {
     CURL *curl = curl_easy_init();
     if (!curl) {
         throw std::runtime_error("curl_easy_init failed");
@@ -22,7 +26,7 @@ std::string httpGet(const std::string &url) {
 
     std::string response;
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, url.data());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0");
@@ -39,6 +43,38 @@ std::string httpGet(const std::string &url) {
     return response;
 }
 
+std::string get_detail_utm(std::string_view ip, std::string_view name) {
+    std::string html;
+    try {
+        std::string link_key = ::fmt::format("http://{}:8080/api/info/list", ip);
+        std::string link_rsa = fmt::format("http://{}:8080/api/rsa", ip);
+
+        auto key_json = nlohmann::json::parse(httpGet(link_key));
+        auto rsa_json = nlohmann::json::parse(httpGet(link_rsa));
+
+        std::string owner_id = key_json["db"]["ownerId"];
+        std::string rsa_start = key_json["rsa"]["startDate"];
+        std::string rsa_expire = key_json["rsa"]["expireDate"];
+        std::string gost_start = key_json["gost"]["startDate"];
+        std::string gost_expire = key_json["gost"]["expireDate"];
+        std::string fact_address;
+        for (auto const &row: rsa_json["rows"]) {
+            if (row["Owner_ID"] == owner_id) {
+                fact_address = row.at("Fact_Address");
+                break;
+            }
+        }
+        html = ::fmt::format(
+                "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>",
+                name, ip, owner_id, rsa_start, rsa_expire, gost_start, gost_expire, fact_address);
+        return html;
+    } catch (const std::exception &ex) {
+        html = ::fmt::format("<tr><td>{}</td><td>{}</td><td colspan='6'>Error: {}</td></tr>", name, ip, ex.what());
+        return html;
+    }
+}
+
+
 int main() {
     httplib::Server server;
     std::ifstream file("utms.json");
@@ -48,76 +84,44 @@ int main() {
     }
     ::nlohmann::json utms;
     file >> utms;
+    std::cout << "UTMs loaded: " << utms.size() << "\n";
+    std::cout << "UTMs: " << utms.dump(2) << "\n";
     file.close();
 
     server.Get("/", [&utms](const httplib::Request &, httplib::Response &res) {
         try {
-            std::string html =
-                "<html><head><meta charset='utf-8'><title>UTM info</title>"
-                "<style>"
-                "body{font-family:Arial,sans-serif;margin:20px;}"
-                "table{border-collapse:collapse;width:100%;}"
-                "th,td{border:1px solid #ccc;padding:8px 12px;text-align:left;vertical-align:top;}"
-                "th{background:#f2f2f2;}"
-                "</style>"
-                "</head><body>"
-                "<h1>Данные УТМ</h1>"
-                "<table>"
-                "<tr>"
-                "<th>Name</th>"
-                "<th>IP</th>"
-                "<th>Owner ID</th>"
-                "<th>RSA start</th>"
-                "<th>RSA expire</th>"
-                "<th>GOST start</th>"
-                "<th>GOST expire</th>"
-                "<th>Fact Address</th>"
-                "</tr>";
+            std::queue<std::future<std::string>> utms_detail;
+            std::string html = "<html><head><meta charset='utf-8'><title>UTM info</title>"
+                   "<style>"
+                   "body{font-family:Arial,sans-serif;margin:20px;}"
+                   "table{border-collapse:collapse;width:100%;margin:0 auto;}"
+                   "th,td{border:1px solid #ccc;padding:8px 12px;}"
+                   "th{background:#f2f2f2;text-align:center;vertical-align:middle;}"
+                   "td{text-align:left;vertical-align:top;}"
+                   "</style>"
+                   "</head><body>"
+                   "<h1 style='text-align:center;'>Данные УТМ</h1>"
+                   "<table>"
+                   "<tr>"
+                   "<th>Имя</th>"
+                   "<th>IP</th>"
+                   "<th>ID ключа</th>"
+                   "<th>RSA записан</th>"
+                   "<th>RSA истекает</th>"
+                   "<th>GOST записан</th>"
+                   "<th>GOST истекает</th>"
+                   "<th>Фактический адрес (в ключе)</th>"
+                   "</tr>";
 
-            for (const auto& utm : utms) {
-                std::string name = utm.value("name", "");
-                std::string adress = utm.value("ip", "");
+            for (const auto &utm: utms) {
+                utms_detail.push(std::async(std::launch::async, [&]() {
+                    return get_detail_utm(utm.value("ip", ""), utm.value("name", ""));
+                }));
+            }
 
-                try {
-                    std::string link_key = "http://" + adress + ":8080/api/info/list";
-                    std::string link_rsa = "http://" + adress + ":8080/api/rsa";
-
-                    auto key_json = nlohmann::json::parse(httpGet(link_key));
-                    auto rsa_json = nlohmann::json::parse(httpGet(link_rsa));
-
-                    std::string ownerId = key_json["db"]["ownerId"];
-                    std::string rsaStart = key_json["rsa"]["startDate"];
-                    std::string rsaExpire = key_json["rsa"]["expireDate"];
-                    std::string gostStart = key_json["gost"]["startDate"];
-                    std::string gostExpire = key_json["gost"]["expireDate"];
-
-                    std::string factAddress = "Не найдено";
-                    for (const auto& row : rsa_json["rows"]) {
-                        if (row.contains("Owner_ID") && row["Owner_ID"] == ownerId) {
-                            factAddress = row.value("Fact_Address", "Не найдено");
-                            break;
-                        }
-                    }
-
-                    html +=
-                        "<tr>"
-                        "<td>" + name + "</td>"
-                        "<td>" + adress + "</td>"
-                        "<td>" + ownerId + "</td>"
-                        "<td>" + rsaStart + "</td>"
-                        "<td>" + rsaExpire + "</td>"
-                        "<td>" + gostStart + "</td>"
-                        "<td>" + gostExpire + "</td>"
-                        "<td>" + factAddress + "</td>"
-                        "</tr>";
-                } catch (const std::exception& ex) {
-                    html +=
-                        "<tr>"
-                        "<td>" + name + "</td>"
-                        "<td>" + adress + "</td>"
-                        "<td colspan='6'>Error: " + std::string(ex.what()) + "</td>"
-                        "</tr>";
-                }
+            while (!utms_detail.empty()) {
+                html += utms_detail.front().get();
+                utms_detail.pop();
             }
 
             html += "</table></body></html>";
