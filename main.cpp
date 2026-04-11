@@ -5,11 +5,42 @@
 #include <stdexcept>
 #include <string>
 #define CPPHTTPLIB_THREAD_POOL_COUNT 4
+#include <ctime>
 #include <future>
+#include <iomanip>
 #include <queue>
-
+#include <sstream>
 
 #include "httplib.h"
+
+
+static std::time_t parse_date_time(const std::string &s) {
+    std::tm tm{};
+    std::istringstream ss(s);
+    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    if (ss.fail()) {
+        return 0;
+    }
+    return std::mktime(&tm);
+}
+
+static std::string expire_class(const std::string &expireDate) {
+    std::time_t t = parse_date_time(expireDate);
+    if (t == 0) {
+        return "";
+    }
+
+    std::time_t now = std::time(nullptr);
+    double daysLeft = std::difftime(t, now) / (60.0 * 60.0 * 24.0);
+
+    if (daysLeft <= 30.0) {
+        return "danger";
+    }
+    if (daysLeft <= 60.0) {
+        return "warn";
+    }
+    return "ok";
+}
 
 size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t totalSize = size * nmemb;
@@ -58,15 +89,30 @@ std::string get_detail_utm(std::string_view ip, std::string_view name) {
         std::string gost_start = key_json["gost"]["startDate"];
         std::string gost_expire = key_json["gost"]["expireDate"];
         std::string fact_address;
+
+        std::string rsa_class = expire_class(rsa_expire);
+        std::string gost_class = expire_class(gost_expire);
+
         for (auto const &row: rsa_json["rows"]) {
-            if (row["Owner_ID"] == owner_id) {
+            if (row.contains("Owner_ID") && row["Owner_ID"] == owner_id) {
                 fact_address = row.at("Fact_Address");
                 break;
             }
         }
-        html = ::fmt::format(
-                "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>",
-                name, ip, owner_id, rsa_start, rsa_expire, gost_start, gost_expire, fact_address);
+
+        html = ::fmt::format("<tr>"
+                             "<td>{}</td>"
+                             "<td>{}</td>"
+                             "<td>{}</td>"
+                             "<td>{}</td>"
+                             "<td class='{}'>{}</td>"
+                             "<td>{}</td>"
+                             "<td class='{}'>{}</td>"
+                             "<td>{}</td>"
+                             "</tr>",
+                             name, ip, owner_id, rsa_start, rsa_class, rsa_expire, gost_start, gost_class, gost_expire,
+                             fact_address);
+
         return html;
     } catch (const std::exception &ex) {
         html = ::fmt::format("<tr><td>{}</td><td>{}</td><td colspan='6'>Error: {}</td></tr>", name, ip, ex.what());
@@ -98,6 +144,9 @@ int main() {
                    "th,td{border:1px solid #ccc;padding:8px 12px;}"
                    "th{background:#f2f2f2;text-align:center;vertical-align:middle;}"
                    "td{text-align:left;vertical-align:top;}"
+                   "td.danger{background-color:#ffcccc;font-weight:bold;}"
+                   "td.warn{background-color:#fff3cd;}"
+                   "td.ok{background-color:#d4edda;}"
                    "</style>"
                    "</head><body>"
                    "<h1 style='text-align:center;'>Данные УТМ</h1>"
@@ -114,9 +163,10 @@ int main() {
                    "</tr>";
 
             for (const auto &utm: utms) {
-                utms_detail.push(std::async(std::launch::async, [&]() {
-                    return get_detail_utm(utm.value("ip", ""), utm.value("name", ""));
-                }));
+                auto ip = utm.value("ip", "");
+                auto name = utm.value("name", "");
+
+                utms_detail.push(std::async(std::launch::async, [ip, name]() { return get_detail_utm(ip, name); }));
             }
 
             while (!utms_detail.empty()) {
