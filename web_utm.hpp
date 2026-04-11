@@ -5,7 +5,7 @@
 
 class UTMDashboard {
 public:
-    UTMDashboard();
+    UTMDashboard(uint64_t port);
     ~UTMDashboard() = default;
 
     UTMDashboard(UTMDashboard const &) = delete;
@@ -22,6 +22,7 @@ private:
     std::string http_get(std::string const &url);
     std::string get_detail_utm(std::string_view ip, std::string_view name);
 
-    httplib::Server m_server;
-    ::nlohmann::json m_utms;
+    httplib::Server m_server; // 752
+    ::nlohmann::json m_utms; // 16
+    uint64_t m_port;
 };

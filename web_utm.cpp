@@ -4,7 +4,7 @@
 #include <future>
 #include <queue>
 
-UTMDashboard::UTMDashboard() {
+UTMDashboard::UTMDashboard(uint64_t port) : m_port{port} {
     std::ifstream file("utms.json");
     if (!file.is_open()) {
         auto err = errno;
@@ -123,7 +123,7 @@ void UTMDashboard::run() {
     m_server.Get("/", [this](const httplib::Request &, httplib::Response &res) {
         try {
             std::queue<std::future<std::string>> utms_detail;
-            std::string html = "<html><head><meta charset='utf-8'><title>UTM info</title>"
+            std::string html = "<html><head><meta charset='utf-8'><title>RAIPO UTM Dashboard</title>"
                                "<style>"
                                "body{font-family:Arial,sans-serif;margin:20px;}"
                                "table{border-collapse:collapse;width:100%;margin:0 auto;}"
@@ -168,6 +168,7 @@ void UTMDashboard::run() {
             res.set_content(std::string("Error: ") + ex.what(), "text/plain; charset=utf-8");
         }
     });
-    std::cout << "Server started: http://127.0.0.1:8081/\n";
-    m_server.listen("0.0.0.0", 8081);
+
+    std::cout << "Server started: http://127.0.0.1:" << m_port << std::endl;
+    m_server.listen("0.0.0.0", static_cast<int>(m_port));
 }
