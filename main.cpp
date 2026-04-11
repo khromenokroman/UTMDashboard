@@ -50,27 +50,25 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
 }
 
 std::string httpGet(std::string const &url) {
-    CURL *curl = curl_easy_init();
+    std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> curl(curl_easy_init(), &curl_easy_cleanup);
     if (!curl) {
         throw std::runtime_error("curl_easy_init failed");
     }
 
     std::string response;
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.data());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0");
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl.get(), CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl.get(), CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl.get(), CURLOPT_USERAGENT, "Mozilla/5.0");
+    curl_easy_setopt(curl.get(), CURLOPT_FOLLOWLOCATION, 1L);
 
-    CURLcode res = curl_easy_perform(curl);
+    CURLcode res = curl_easy_perform(curl.get());
     if (res != CURLE_OK) {
         std::string err = curl_easy_strerror(res);
-        curl_easy_cleanup(curl);
         throw std::runtime_error("Request failed: " + err);
     }
 
-    curl_easy_cleanup(curl);
     return response;
 }
 
@@ -138,29 +136,29 @@ int main() {
         try {
             std::queue<std::future<std::string>> utms_detail;
             std::string html = "<html><head><meta charset='utf-8'><title>UTM info</title>"
-                   "<style>"
-                   "body{font-family:Arial,sans-serif;margin:20px;}"
-                   "table{border-collapse:collapse;width:100%;margin:0 auto;}"
-                   "th,td{border:1px solid #ccc;padding:8px 12px;}"
-                   "th{background:#f2f2f2;text-align:center;vertical-align:middle;}"
-                   "td{text-align:left;vertical-align:top;}"
-                   "td.danger{background-color:#ffcccc;font-weight:bold;}"
-                   "td.warn{background-color:#fff3cd;}"
-                   "td.ok{background-color:#d4edda;}"
-                   "</style>"
-                   "</head><body>"
-                   "<h1 style='text-align:center;'>Данные УТМ</h1>"
-                   "<table>"
-                   "<tr>"
-                   "<th>Имя</th>"
-                   "<th>IP</th>"
-                   "<th>ID ключа</th>"
-                   "<th>RSA записан</th>"
-                   "<th>RSA истекает</th>"
-                   "<th>GOST записан</th>"
-                   "<th>GOST истекает</th>"
-                   "<th>Фактический адрес (в ключе)</th>"
-                   "</tr>";
+                               "<style>"
+                               "body{font-family:Arial,sans-serif;margin:20px;}"
+                               "table{border-collapse:collapse;width:100%;margin:0 auto;}"
+                               "th,td{border:1px solid #ccc;padding:8px 12px;}"
+                               "th{background:#f2f2f2;text-align:center;vertical-align:middle;}"
+                               "td{text-align:left;vertical-align:top;}"
+                               "td.danger{background-color:#ffcccc;font-weight:bold;}"
+                               "td.warn{background-color:#fff3cd;}"
+                               "td.ok{background-color:#d4edda;}"
+                               "</style>"
+                               "</head><body>"
+                               "<h1 style='text-align:center;'>Данные УТМ</h1>"
+                               "<table>"
+                               "<tr>"
+                               "<th>Имя</th>"
+                               "<th>IP</th>"
+                               "<th>ID ключа</th>"
+                               "<th>RSA записан</th>"
+                               "<th>RSA истекает</th>"
+                               "<th>GOST записан</th>"
+                               "<th>GOST истекает</th>"
+                               "<th>Фактический адрес (в ключе)</th>"
+                               "</tr>";
 
             for (const auto &utm: utms) {
                 auto ip = utm.value("ip", "");
