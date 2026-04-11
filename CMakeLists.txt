@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 4.2)
-project(web)
+project(utm-dashboard)
 
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(fmt REQUIRED)
 
-add_executable(web main.cpp web_utm.cpp)
+add_executable(${PROJECT_NAME}
+        src/main.cpp
+        src/utm_dashboard.cpp)
 
-target_link_libraries(web PRIVATE curl fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE curl fmt::fmt)
