@@ -2,7 +2,7 @@
 
 
 int main() {
-    UTMDashboard dashboard;
+    UTMDashboard dashboard(8080);
     dashboard.run();
 
     return 0;
