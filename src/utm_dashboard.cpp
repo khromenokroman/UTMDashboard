@@ -146,8 +146,11 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
     }
 }
 void UTMDashboard::run() {
-    m_server.Get("/", [this](const httplib::Request &, httplib::Response &res) {
+    m_server.Get("/", [this](const httplib::Request &req, httplib::Response &res) {
         try {
+            syslog(LOG_DEBUG, "Поступил запрос от %s:%d на %s:%d", req.remote_addr.c_str(), req.remote_port,
+                   req.local_addr.c_str(), req.local_port);
+
             std::queue<std::future<std::string>> utms_detail;
             std::string html = "<html><head><meta charset='utf-8'><title>RAIPO UTM Dashboard</title>"
                                "<style>"
