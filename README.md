@@ -1,6 +1,7 @@
 # UTM Dashboard
 
 Веб-панель для просмотра данных по УТМ:
+
 - имя и адрес УТМ
 - идентификатор ключа
 - период действия RSA
@@ -14,8 +15,8 @@
 - чтение списка УТМ из JSON
 - параллельный опрос нескольких УТМ
 - получение данных через API:
-  - `/api/info/list`
-  - `/api/rsa`
+    - `/api/info/list`
+    - `/api/rsa`
 - подсветка сроков действия сертификатов
 - вывод в браузер в виде таблицы
 - логирование в syslog
@@ -24,6 +25,7 @@
 ## Требования
 
 ### Для сборки
+
 - CMake 3.26+
 - C++20
 - `fmt`
@@ -35,6 +37,7 @@ apt install -y build-essential cmake libfmt-dev nlohmann-json3-dev dpkg-dev libc
 ````
 
 ## Сборка из исходников
+
 ```bash 
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr ..
@@ -45,6 +48,7 @@ cmake --install .
 ## Сборка DEB
 
 Пакет собирается через CPack:
+
 ```bash 
 cd build cpack -G DEB
 apt install -y ./utm-dashboard_<версия>_amd64.deb
@@ -53,23 +57,42 @@ apt install -y ./utm-dashboard_<версия>_amd64.deb
 После установки будут размещены:
 
 - бинарник: `/usr/bin/utm-dashboard`
-- конфиг: `/etc/utm-dashboard//utms.json`
+- конфиг(УТМ): `/etc/utm-dashboard//utms.json`
+- конфиг(Настройки): `/etc/utm-dashboard/cfg.json`
 - unit-файл systemd: `/usr/lib/systemd/system/utm-dashboard.service`
 
+### Параметры(cfg.json)
+
+- `port` — порт, на котором запускается HTTP-сервер
+- `log_level` — уровень логирования для `syslog`
+
+Возможные уровнилогирования:
+
+- LOG_EMERG - 0
+- LOG_ALERT - 1
+- LOG_CRIT - 2
+- LOG_ERR - 3
+- LOG_WARNING - 4
+- LOG_NOTICE - 5
+- LOG_INFO - 6
+- LOG_DEBUG - 7
 
 ## Запуск
 
 После установки сервис можно запускать так:
+
 ```bash 
 systemctl daemon-reload
 systemctl enable utm-dashboard
 systemctl start utm-dashboard
 ```
+
 Проверка статуса:
 
 ```bash 
 systemctl status utm-dashboard
 ```
+
 По умолчанию сервер доступен на: http://localhost:8080
 
 ## Логирование
@@ -77,6 +100,7 @@ systemctl status utm-dashboard
 Приложение пишет сообщения в `syslog`.
 
 Используются уровни:
+
 - `LOG_ERR`
 - `LOG_INFO`
 - `LOG_NOTICE`
