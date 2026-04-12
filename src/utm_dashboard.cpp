@@ -90,10 +90,15 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
 
 
         std::string owner_id = key_json["db"]["ownerId"];
+        syslog(LOG_DEBUG, "Получен owner_id");
         std::string rsa_start = key_json["rsa"]["startDate"];
+        syslog(LOG_DEBUG, "Получен rsa_start");
         std::string rsa_expire = key_json["rsa"]["expireDate"];
+        syslog(LOG_DEBUG, "Получен rsa_expire");
         std::string gost_start = key_json["gost"]["startDate"];
+        syslog(LOG_DEBUG, "Получен gost_start");
         std::string gost_expire = key_json["gost"]["expireDate"];
+        syslog(LOG_DEBUG, "Получен gost_expire");
         std::string fact_address;
 
         std::string rsa_class = expire_class(rsa_expire);
