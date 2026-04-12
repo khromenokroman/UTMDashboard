@@ -1,0 +1,87 @@
+# UTM Dashboard
+
+Веб-панель для просмотра данных по УТМ:
+- имя и адрес УТМ
+- идентификатор ключа
+- период действия RSA
+- период действия GOST
+- фактический адрес из ключа
+
+Приложение поднимает локальный HTTP-сервер и формирует HTML-таблицу по списку УТМ из файла `configuration/utms.json`.
+
+## Возможности
+
+- чтение списка УТМ из JSON
+- параллельный опрос нескольких УТМ
+- получение данных через API:
+  - `/api/info/list`
+  - `/api/rsa`
+- подсветка сроков действия сертификатов
+- вывод в браузер в виде таблицы
+- логирование в syslog
+- сборка Debian-пакета через CPack
+
+## Требования
+
+### Для сборки
+- CMake 3.26+
+- C++20
+- `fmt`
+- `cpp-httplib`
+- `nlohmann-json`
+
+### Для упаковки в DEB
+- `dpkg-dev`
+- `cpack`
+
+## Сборка из исходников
+```bash 
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release cmake --build build -j$(nproc)
+```
+
+## Запуск
+```bash 
+./build/utm-dashboard
+```
+
+По умолчанию сервер доступен на: http://localhost:8080
+
+## Установка через DEB
+
+Пакет собирается через CPack:
+```bash 
+cd build cpack -G DEB
+```
+
+После установки будут размещены:
+
+- бинарник: `/usr/bin/utm-dashboard`
+- конфиг: `/etc/utms.json`
+- unit-файл systemd: `/usr/lib/systemd/system/utm-dashboard.service`
+
+## systemd
+
+После установки пакета сервис можно запускать так:
+```bash 
+systemctl daemon-reload
+systemctl enable utm-dashboard
+systemctl start utm-dashboard
+```
+
+Проверка статуса:
+
+```bash 
+systemctl status utm-dashboard
+```
+
+## Логирование
+
+Приложение пишет сообщения в `syslog`.
+
+Используются уровни:
+- `LOG_ERR`
+- `LOG_INFO`
+- `LOG_NOTICE`
+- `LOG_DEBUG`
+
+Уровень фильтрации можно настраивать в коде через `setlogmask()`.
