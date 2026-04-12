@@ -34,27 +34,18 @@
 apt install -y build-essential cmake libfmt-dev nlohmann-json3-dev dpkg-dev libcpp-httplib-dev
 ````
 
-### Для упаковки в DEB
-- `dpkg-dev`
-- `cpack`
-
 ## Сборка из исходников
 ```bash 
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release cmake --build build -j$(nproc)
+cmake --install build .
 ```
 
-## Запуск
-```bash 
-./build/utm-dashboard
-```
-
-По умолчанию сервер доступен на: http://localhost:8080
-
-## Установка через DEB
+## Сборка DEB
 
 Пакет собирается через CPack:
 ```bash 
 cd build cpack -G DEB
+apt install -y ./utm-dashboard_<версия>_amd64.deb
 ```
 
 После установки будут размещены:
@@ -63,20 +54,21 @@ cd build cpack -G DEB
 - конфиг: `/etc/utms.json`
 - unit-файл systemd: `/usr/lib/systemd/system/utm-dashboard.service`
 
-## systemd
 
-После установки пакета сервис можно запускать так:
+## Запуск
+
+После установки сервис можно запускать так:
 ```bash 
 systemctl daemon-reload
 systemctl enable utm-dashboard
 systemctl start utm-dashboard
 ```
-
 Проверка статуса:
 
 ```bash 
 systemctl status utm-dashboard
 ```
+По умолчанию сервер доступен на: http://localhost:8080
 
 ## Логирование
 
