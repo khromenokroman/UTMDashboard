@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.25.1)
 project(utm-dashboard
         VERSION 0.4.4
         LANGUAGES CXX
