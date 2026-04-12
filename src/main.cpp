@@ -3,7 +3,7 @@
 
 int main() {
     try {
-        UTMDashboard dashboard(8080);
+        UTMDashboard dashboard;
         dashboard.run();
         return EXIT_SUCCESS;
     } catch (std::exception const &ex) {
