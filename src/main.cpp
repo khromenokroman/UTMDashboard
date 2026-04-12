@@ -4,6 +4,5 @@
 int main() {
     UTMDashboard dashboard(8080);
     dashboard.run();
-
     return 0;
 }
