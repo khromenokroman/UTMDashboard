@@ -123,7 +123,7 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
         std::string name_link = fmt::format("<a href='{}' target='_blank'>{}</a>", link_app, name);
 
         html = ::fmt::format("<tr>"
-                             "<td>{}</td>"
+                             "<td class='warn'>{}</td>"
                              "<td>{}</td>"
                              "<td>{}</td>"
                              "<td class='{}'>{}</td>"
