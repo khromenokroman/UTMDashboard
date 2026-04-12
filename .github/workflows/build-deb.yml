@@ -45,7 +45,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: utm-dashboard-deb
-          path: build/*.deb
+          path: |
+            build/*.deb
+            build/Version
           retention-days: 7
 
   release:
@@ -66,7 +68,7 @@ jobs:
       - name: Get version
         id: version
         run: |
-          VERSION=$(cat build/Version)
+          VERSION=$(cat artifacts/version.txt)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
