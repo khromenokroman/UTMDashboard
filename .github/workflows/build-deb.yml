@@ -68,7 +68,7 @@ jobs:
       - name: Get version
         id: version
         run: |
-          VERSION=$(cat artifacts/version.txt)
+          VERSION=$(cat artifacts/Version)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
