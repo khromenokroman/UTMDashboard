@@ -89,6 +89,7 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
         std::string link_app = fmt::format("http://{}:8080/app/", ip);
 
 
+        syslog(LOG_DEBUG, "Разбор данных...");
         std::string owner_id = key_json["db"]["ownerId"];
         syslog(LOG_DEBUG, "Получен owner_id");
         std::string rsa_start = key_json["rsa"]["startDate"];
