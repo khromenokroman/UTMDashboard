@@ -19,7 +19,7 @@ include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(FILES utms.json
+install(FILES configuration/utms.json
         DESTINATION /etc)
 
 install(FILES systemd/utm-dashboard.service
