@@ -4,20 +4,33 @@
 #include <queue>
 #include <syslog.h>
 
-UTMDashboard::UTMDashboard(uint64_t port) : m_port{port} {
+UTMDashboard::UTMDashboard() {
     openlog("UTMDashboard", LOG_PID | LOG_CONS, LOG_USER);
-    setlogmask(LOG_UPTO(LOG_INFO));
-    std::ifstream file(m_file_utms.data());
-    if (!file.is_open()) {
+
+    std::ifstream file_cfg(m_file_cfg.data());
+    if (!file_cfg.is_open()) {
+        auto err = errno;
+        syslog(LOG_ERR, "Не могу открыть настройки(%s): %s", m_file_cfg.data(), strerror(err));
+        throw std::runtime_error(::fmt::format("Не могу открыть настройки({}): {}", m_file_cfg, strerror(err)));
+    }
+    ::nlohmann::json cfg;
+    file_cfg >> cfg;
+    file_cfg.close();
+    m_port = cfg.value("port", 8080);
+    auto log_level = cfg.value("log_level", LOG_INFO);
+    setlogmask(LOG_UPTO(log_level));
+
+    std::ifstream file_utms(m_file_utms.data());
+    if (!file_utms.is_open()) {
         auto err = errno;
         syslog(LOG_ERR, "Не могу открыть список УТМ(%s): %s", m_file_utms.data(), strerror(err));
         throw std::runtime_error(::fmt::format("Не могу открыть список УТМ({}): {}", m_file_utms, strerror(err)));
     }
 
-    file >> m_utms;
+    file_utms >> m_utms;
     syslog(LOG_INFO, "Загружен список УТМ из %lu шт.", m_utms.size());
     syslog(LOG_DEBUG, "УТМы:\n%s", m_utms.dump(2).c_str());
-    file.close();
+    file_utms.close();
 }
 std::time_t UTMDashboard::parse_date_time(const std::string &s) {
     std::tm tm{};

@@ -4,7 +4,7 @@
 
 class UTMDashboard {
 public:
-    UTMDashboard(uint64_t port);
+    UTMDashboard();
     ~UTMDashboard() = default;
 
     UTMDashboard(UTMDashboard const &) = delete;
@@ -22,5 +22,6 @@ private:
     httplib::Server m_server; // 752
     ::nlohmann::json m_utms; // 16
     std::string_view m_file_utms{"/etc/utm-dashboard/utms.json"}; // 16
+    std::string_view m_file_cfg{"/etc/utm-dashboard/cfg.json"}; // 16
     uint64_t m_port; // 8
 };
