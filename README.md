@@ -36,8 +36,10 @@ apt install -y build-essential cmake libfmt-dev nlohmann-json3-dev dpkg-dev libc
 
 ## Сборка из исходников
 ```bash 
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release cmake --build build -j$(nproc)
-cmake --install build .
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . -j$(nproc)
+cmake --install .
 ```
 
 ## Сборка DEB
