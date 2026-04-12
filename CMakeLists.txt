@@ -24,6 +24,9 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES configuration/utms.json
         DESTINATION /etc/utm-dashboard/
 )
+install(FILES configuration/cfg.json
+        DESTINATION /etc/utm-dashboard/
+)
 
 install(FILES systemd/utm-dashboard.service
         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system
