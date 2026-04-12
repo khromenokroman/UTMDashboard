@@ -22,10 +22,12 @@ install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES configuration/utms.json
-        DESTINATION /etc)
+        DESTINATION /etc
+)
 
 install(FILES systemd/utm-dashboard.service
-        DESTINATION /usr/lib/systemd/system)
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/systemd/system
+)
 
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "khromenokroman")
