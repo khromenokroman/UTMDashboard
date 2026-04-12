@@ -7,11 +7,11 @@
 UTMDashboard::UTMDashboard(uint64_t port) : m_port{port} {
     openlog("UTMDashboard", LOG_PID | LOG_CONS, LOG_USER);
     setlogmask(LOG_UPTO(LOG_INFO));
-    std::ifstream file("utms.json");
+    std::ifstream file(m_file_utms.data());
     if (!file.is_open()) {
         auto err = errno;
-        syslog(LOG_ERR, "Не могу открыть список УТМ(utms.json): %s", strerror(err));
-        throw std::runtime_error(::fmt::format("Не могу открыть список УТМ(utms.json): {}", strerror(err)));
+        syslog(LOG_ERR, "Не могу открыть список УТМ(%s): %s", m_file_utms.data(), strerror(err));
+        throw std::runtime_error(::fmt::format("Не могу открыть список УТМ({}): {}", m_file_utms, strerror(err)));
     }
 
     file >> m_utms;
