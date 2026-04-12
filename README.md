@@ -30,6 +30,10 @@
 - `cpp-httplib`
 - `nlohmann-json`
 
+````bash
+apt install -y build-essential cmake libfmt-dev nlohmann-json3-dev dpkg-dev libcpp-httplib-dev
+````
+
 ### Для упаковки в DEB
 - `dpkg-dev`
 - `cpack`
