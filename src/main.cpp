@@ -2,7 +2,12 @@
 
 
 int main() {
-    UTMDashboard dashboard(8080);
-    dashboard.run();
-    return 0;
+    try {
+        UTMDashboard dashboard(8080);
+        dashboard.run();
+        return EXIT_SUCCESS;
+    } catch (std::exception const &ex) {
+        std::cerr << "Ошибка запуска приложения: " << ex.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 }
