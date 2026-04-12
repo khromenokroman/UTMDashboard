@@ -63,7 +63,7 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
     std::string html;
     try {
         nlohmann::json key_json;
-        nlohmann::json rsa_json;
+        nlohmann::json org_json;
 
         httplib::Client get_key(ip.data(), 8080);
         if (auto res = get_key.Get("/api/info/list")) {
@@ -75,19 +75,8 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
                     ::fmt::format("Не удалось получить данные УТМ по адресу {}:8080/api/info/list. Причина: {}", ip,
                                   httplib::to_string(res.error())));
         }
-        httplib::Client get_rsa(ip.data(), 8080);
-        if (auto res = get_rsa.Get("/api/rsa")) {
-            rsa_json = nlohmann::json::parse(res->body);
-            syslog(LOG_DEBUG, "Получен ответ от '%s' -> '%s' по пути /api/rsa:\n%s", name.data(), ip.data(),
-                   rsa_json.dump(2).c_str());
-        } else {
-            throw std::runtime_error(
-                    ::fmt::format("Не удалось получить данные УТМ по адресу {}:8080/api/rsa. Причина: {}", ip,
-                                  httplib::to_string(res.error())));
-        }
 
         std::string link_app = fmt::format("http://{}:8080/app/", ip);
-
 
         syslog(LOG_DEBUG, "Разбор данных...");
         std::string owner_id = key_json["db"]["ownerId"];
@@ -100,13 +89,24 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
         syslog(LOG_DEBUG, "Получен gost_start");
         std::string gost_expire = key_json["gost"]["expireDate"];
         syslog(LOG_DEBUG, "Получен gost_expire");
-        std::string fact_address;
 
         std::string rsa_class = expire_class(rsa_expire);
         std::string gost_class = expire_class(gost_expire);
 
+        httplib::Client get_rsa(ip.data(), 8080);
+        if (auto res = get_rsa.Get("/api/rsa")) {
+            org_json = nlohmann::json::parse(res->body);
+            syslog(LOG_DEBUG, "Получен ответ от '%s' -> '%s' по пути /api/rsa:\n%s", name.data(), ip.data(),
+                   org_json.dump(2).c_str());
+        } else {
+            throw std::runtime_error(
+                    ::fmt::format("Не удалось получить данные УТМ по адресу {}:8080/api/rsa. Причина: {}", ip,
+                                  httplib::to_string(res.error())));
+        }
+
+        std::string fact_address;
         syslog(LOG_DEBUG, "Пытаюсь получить фактический адрес по ID(%s)...", owner_id.c_str());
-        for (auto const &row: rsa_json["rows"]) {
+        for (auto const &row: org_json["rows"]) {
             if (row.contains("Owner_ID") && row["Owner_ID"] == owner_id) {
                 syslog(LOG_DEBUG, "Найдена организация по ID(%s):\n%s", row["Owner_ID"].get<std::string>().c_str(),
                        row.dump(2).c_str());
