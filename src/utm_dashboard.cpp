@@ -6,6 +6,7 @@
 
 UTMDashboard::UTMDashboard(uint64_t port) : m_port{port} {
     openlog("UTMDashboard", LOG_PID | LOG_CONS, LOG_USER);
+    setlogmask(LOG_UPTO(LOG_INFO));
     std::ifstream file("utms.json");
     if (!file.is_open()) {
         auto err = errno;
@@ -15,7 +16,7 @@ UTMDashboard::UTMDashboard(uint64_t port) : m_port{port} {
 
     file >> m_utms;
     syslog(LOG_INFO, "Загружен список УТМ из %lu шт.", m_utms.size());
-    syslog(LOG_INFO, "УТМы:\n%s", m_utms.dump(2).c_str());
+    syslog(LOG_DEBUG, "УТМы:\n%s", m_utms.dump(2).c_str());
     file.close();
 }
 std::time_t UTMDashboard::parse_date_time(const std::string &s) {
