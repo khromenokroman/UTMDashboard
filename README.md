@@ -53,7 +53,7 @@ apt install -y ./utm-dashboard_<версия>_amd64.deb
 После установки будут размещены:
 
 - бинарник: `/usr/bin/utm-dashboard`
-- конфиг: `/etc/utms.json`
+- конфиг: `/etc/utm-dashboard//utms.json`
 - unit-файл systemd: `/usr/lib/systemd/system/utm-dashboard.service`
 
 
