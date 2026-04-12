@@ -10,8 +10,8 @@ UTMDashboard::UTMDashboard(uint64_t port) : m_port{port} {
     std::ifstream file("utms.json");
     if (!file.is_open()) {
         auto err = errno;
-        syslog(LOG_ERR, "Не могу открыть список УТМ: %s", strerror(err));
-        throw std::runtime_error(::fmt::format("Failed to open utms.json: {}", strerror(err)));
+        syslog(LOG_ERR, "Не могу открыть список УТМ(utms.json): %s", strerror(err));
+        throw std::runtime_error(::fmt::format("Не могу открыть список УТМ(utms.json): {}", strerror(err)));
     }
 
     file >> m_utms;
