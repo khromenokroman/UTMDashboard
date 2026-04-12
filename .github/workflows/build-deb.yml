@@ -1,0 +1,80 @@
+name: Build DEB package
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create release with DEB package'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y build-essential cmake libfmt-dev nlohmann-json3-dev dpkg-dev
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: |
+          cmake --build build -j$(nproc)
+
+      - name: Package DEB
+        run: |
+          cd build
+          cpack -G DEB
+
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: utm-dashboard-deb
+          path: build/*.deb
+          retention-days: 7
+
+  release:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: utm-dashboard-deb
+          path: artifacts
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(grep -oP 'project\(utm-dashboard\s+VERSION\s+\K[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt || echo "0.1.0")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: UTM Dashboard v${{ steps.version.outputs.VERSION }}
+          files: artifacts/*.deb
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
