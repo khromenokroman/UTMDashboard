@@ -22,7 +22,7 @@ install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES configuration/utms.json
-        DESTINATION /etc
+        DESTINATION /etc/utm-dashboard/
 )
 
 install(FILES systemd/utm-dashboard.service
