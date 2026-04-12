@@ -59,16 +59,16 @@ std::string UTMDashboard::expire_class(const std::string &expireDate) {
     return "ok";
 }
 
-std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view name) {
+std::string UTMDashboard::get_detail_utm(std::string ip, std::string name) {
     std::string html;
     try {
         nlohmann::json key_json;
         nlohmann::json org_json;
 
-        httplib::Client get_key(ip.data(), 8080);
+        httplib::Client get_key(ip.c_str(), 8080);
         if (auto res = get_key.Get("/api/info/list")) {
             key_json = nlohmann::json::parse(res->body);
-            syslog(LOG_DEBUG, "Получен ответ от '%s' -> '%s' по пути /api/info/list:\n%s", name.data(), ip.data(),
+            syslog(LOG_DEBUG, "Получен ответ от '%s' -> '%s' по пути /api/info/list:\n%s", name.c_str(), ip.c_str(),
                    key_json.dump(2).c_str());
         } else {
             throw std::runtime_error(
@@ -93,10 +93,10 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
         std::string rsa_class = expire_class(rsa_expire);
         std::string gost_class = expire_class(gost_expire);
 
-        httplib::Client get_rsa(ip.data(), 8080);
+        httplib::Client get_rsa(ip.c_str(), 8080);
         if (auto res = get_rsa.Get("/api/rsa")) {
             org_json = nlohmann::json::parse(res->body);
-            syslog(LOG_DEBUG, "Получен ответ от '%s' -> '%s' по пути /api/rsa:\n%s", name.data(), ip.data(),
+            syslog(LOG_DEBUG, "Получен ответ от '%s' -> '%s' по пути /api/rsa:\n%s", name.c_str(), ip.c_str(),
                    org_json.dump(2).c_str());
         } else {
             throw std::runtime_error(
@@ -117,7 +117,7 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
 
         syslog(LOG_INFO,
                "Получены данные УТМ '%s' -> '%s': owner_id='%s', RSA='%s'..'%s', GOST='%s'..'%s', address='%s'",
-               name.data(), ip.data(), owner_id.c_str(), rsa_start.c_str(), rsa_expire.c_str(), gost_start.c_str(),
+               name.c_str(), ip.c_str(), owner_id.c_str(), rsa_start.c_str(), rsa_expire.c_str(), gost_start.c_str(),
                gost_expire.c_str(), fact_address.c_str());
 
         std::string name_link = fmt::format("<a href='{}' target='_blank'>{}</a>", link_app, name);
@@ -134,14 +134,14 @@ std::string UTMDashboard::get_detail_utm(std::string_view ip, std::string_view n
                              name_link, owner_id, rsa_start, rsa_class, rsa_expire, gost_start, gost_class, gost_expire,
                              fact_address);
 
-        syslog(LOG_DEBUG, "Сформирован ответ для '%s' -> '%s': %s", name.data(), ip.data(), html.c_str());
+        syslog(LOG_DEBUG, "Сформирован ответ для '%s' -> '%s': %s", name.c_str(), ip.c_str(), html.c_str());
 
         return html;
     } catch (const std::exception &ex) {
         std::string link_app = fmt::format("http://{}:8080/app/", ip);
         std::string name_link = fmt::format("<a href='{}' target='_blank'>{}</a>", link_app, name);
         html = ::fmt::format("<tr><td>{}</td><td class='danger' colspan='6'>{}</td></tr>", name_link, ex.what());
-        syslog(LOG_ERR, "Ошибка при обработке '%s' -> '%s': %s", name.data(), ip.data(), ex.what());
+        syslog(LOG_ERR, "Ошибка при обработке '%s' -> '%s': %s", name.c_str(), ip.c_str(), ex.what());
         return html;
     }
 }
