@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 4.2)
 project(utm-dashboard
-        VERSION 0.2.0
+        VERSION 0.3.0
         LANGUAGES CXX
         HOMEPAGE_URL "https://github.com/khromenokroman/UTMDashboard")
 
