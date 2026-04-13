@@ -154,7 +154,7 @@ void UTMDashboard::run() {
             std::queue<std::future<std::string>> utms_detail;
             std::string html = "<html><head><meta charset='utf-8'><title>RAIPO UTM Dashboard</title>"
                                "<style>"
-                               "body{font-family:Arial,sans-serif;margin:20px;}"
+                               "body{font-family:Cambria,sans-serif;margin:20px;}"
                                "table{border-collapse:collapse;width:100%;margin:0 auto;}"
                                "th,td{border:1px solid #ccc;padding:8px 12px;}"
                                "th{background:#f2f2f2;text-align:center;vertical-align:middle;}"
