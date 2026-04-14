@@ -14,8 +14,8 @@ on:
         type: boolean
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-debian12:
+    runs-on: debian12
 
     steps:
       - name: Checkout
@@ -51,9 +51,9 @@ jobs:
           retention-days: 7
 
   release:
-    needs: build
+    needs: build-debian12
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true'
-    runs-on: ubuntu-latest
+    runs-on: debian12
 
     steps:
       - name: Checkout
