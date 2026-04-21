@@ -161,21 +161,22 @@ void UTMDashboard::run() {
     <title>RAIPO UTM Dashboard</title>
     <style>
         :root {
-            --bg1: #f3f7fb;
-            --bg2: #e9eef5;
-            --card: #ffffff;
-            --card-border: rgba(31, 41, 55, 0.10);
+            --bg1: #e7edf4;
+            --bg2: #d9e2ec;
+            --bg3: #cfd9e6;
+            --card: rgba(255, 255, 255, 0.72);
+            --card-border: rgba(31, 41, 55, 0.12);
             --text: #1f2937;
-            --muted: #5b6472;
-            --accent: #2563eb;
+            --muted: #5f6b7a;
+            --accent: #1d4ed8;
             --accent2: #0f766e;
-            --danger-bg: #fde2e2;
-            --warn-bg: #fff3cd;
-            --ok-bg: #dcfce7;
-            --danger-text: #9f1239;
-            --warn-text: #92400e;
-            --ok-text: #166534;
-            --shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
+            --danger-bg: #f9d7d7;
+            --warn-bg: #f6e7b6;
+            --ok-bg: #d8eedf;
+            --danger-text: #8f1d35;
+            --warn-text: #8a5a00;
+            --ok-text: #15603c;
+            --shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
         }
 
         * {
@@ -188,9 +189,9 @@ void UTMDashboard::run() {
             font-family: Cambria, serif;
             color: var(--text);
             background:
-                radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
-                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 26%),
-                linear-gradient(135deg, var(--bg1), var(--bg2));
+                radial-gradient(circle at top left, rgba(29, 78, 216, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.09), transparent 26%),
+                linear-gradient(135deg, var(--bg1), var(--bg2) 55%, var(--bg3));
             padding: 24px;
         }
 
@@ -198,8 +199,8 @@ void UTMDashboard::run() {
             width: 100%;
             max-width: 1400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.86);
-            backdrop-filter: blur(8px);
+            background: var(--card);
+            backdrop-filter: blur(9px);
             border: 1px solid var(--card-border);
             border-radius: 28px;
             box-shadow: var(--shadow);
@@ -226,8 +227,8 @@ void UTMDashboard::run() {
             overflow-x: auto;
             border-radius: 22px;
             border: 1px solid var(--card-border);
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
-            background: var(--card);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+            background: rgba(255, 255, 255, 0.55);
         }
 
         table {
@@ -252,7 +253,7 @@ void UTMDashboard::run() {
             position: sticky;
             top: 0;
             z-index: 1;
-            background: #f8fafc;
+            background: #e8eef5;
             text-align: center;
             font-size: 16px;
             letter-spacing: 0.2px;
@@ -260,11 +261,11 @@ void UTMDashboard::run() {
         }
 
         tbody tr td {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.58);
         }
 
         tr:hover td {
-            background: #f1f7ff;
+            background: rgba(241, 247, 255, 0.95);
         }
 
         td {
@@ -296,7 +297,7 @@ void UTMDashboard::run() {
         }
 
         a:hover {
-            color: #1d4ed8;
+            color: #1e40af;
             text-decoration: underline;
         }
 
