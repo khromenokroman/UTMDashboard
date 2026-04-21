@@ -95,7 +95,7 @@ systemctl start utm-dashboard
 systemctl status utm-dashboard
 ```
 
-По умолчанию сервер доступен на: http://localhost:8080
+По умолчанию сервер доступен на: http://localhost
 
 ## Логирование
 
