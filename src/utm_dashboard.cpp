@@ -123,13 +123,13 @@ std::string UTMDashboard::get_detail_utm(std::string ip, std::string name) {
         std::string name_link = fmt::format("<a href='{}' target='_blank'>{}</a>", link_app, name);
 
         html = ::fmt::format("<tr>"
-                             "<td>{}</td>"
-                             "<td>{}</td>"
-                             "<td>{}</td>"
-                             "<td class='{}'>{}</td>"
-                             "<td>{}</td>"
-                             "<td class='{}'>{}</td>"
-                             "<td>{}</td>"
+                             "<td style='text-align:center;'>{}</td>"
+                             "<td style='text-align:center;'>{}</td>"
+                             "<td style='text-align:center;'>{}</td>"
+                             "<td class='{}' style='text-align:center;'>{}</td>"
+                             "<td style='text-align:center;'>{}</td>"
+                             "<td class='{}' style='text-align:center;'>{}</td>"
+                             "<td style='text-align:center;'>{}</td>"
                              "</tr>",
                              name_link, owner_id, rsa_start, rsa_class, rsa_expire, gost_start, gost_class, gost_expire,
                              fact_address);
@@ -140,7 +140,8 @@ std::string UTMDashboard::get_detail_utm(std::string ip, std::string name) {
     } catch (const std::exception &ex) {
         std::string link_app = fmt::format("http://{}:8080/app/", ip);
         std::string name_link = fmt::format("<a href='{}' target='_blank'>{}</a>", link_app, name);
-        html = ::fmt::format("<tr><td>{}</td><td class='danger' colspan='6'>{}</td></tr>", name_link, ex.what());
+        html = ::fmt::format("<tr><td class='danger' colspan='7' style='text-align:center;'>{}: {}</td></tr>",
+                             name_link, ex.what());
         syslog(LOG_ERR, "Ошибка при обработке '%s' -> '%s': %s", name.c_str(), ip.c_str(), ex.what());
         return html;
     }
@@ -169,7 +170,6 @@ void UTMDashboard::run() {
             --text: #1f2937;
             --muted: #5f6b7a;
             --accent: #1d4ed8;
-            --accent2: #0f766e;
             --danger-bg: #f9d7d7;
             --warn-bg: #f6e7b6;
             --ok-bg: #d8eedf;
@@ -242,7 +242,7 @@ void UTMDashboard::run() {
             border-bottom: 1px solid rgba(15, 23, 42, 0.08);
             border-right: 1px solid rgba(15, 23, 42, 0.06);
             vertical-align: top;
-            text-align: left;
+            text-align: center;
         }
 
         th:last-child, td:last-child {
@@ -349,6 +349,7 @@ void UTMDashboard::run() {
 </body>
 </html>
 )html";
+
             syslog(LOG_DEBUG, "Обработка запроса завершена, итоговый результат:\n%s", html.c_str());
 
             res.set_content(html, "text/html; charset=utf-8");
