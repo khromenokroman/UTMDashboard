@@ -152,29 +152,179 @@ void UTMDashboard::run() {
                    req.local_addr.c_str(), req.local_port);
 
             std::queue<std::future<std::string>> utms_detail;
-            std::string html = "<html><head><meta charset='utf-8'><title>RAIPO UTM Dashboard</title>"
-                               "<style>"
-                               "body{font-family:Cambria,sans-serif;margin:20px;}"
-                               "table{border-collapse:collapse;width:100%;margin:0 auto;}"
-                               "th,td{border:1px solid #ccc;padding:8px 12px;}"
-                               "th{background:#f2f2f2;text-align:center;vertical-align:middle;}"
-                               "td{text-align:left;vertical-align:top;}"
-                               "td.danger{background-color:#ffcccc;font-weight:bold;}"
-                               "td.warn{background-color:#fff3cd;}"
-                               "td.ok{background-color:#d4edda;}"
-                               "</style>"
-                               "</head><body>"
-                               "<h1 style='text-align:center;'>Данные УТМ</h1>"
-                               "<table>"
-                               "<tr>"
-                               "<th>Имя</th>"
-                               "<th>ID ключа</th>"
-                               "<th>RSA записан</th>"
-                               "<th>RSA истекает</th>"
-                               "<th>GOST записан</th>"
-                               "<th>GOST истекает</th>"
-                               "<th>Фактический адрес (в ключе)</th>"
-                               "</tr>";
+            std::string html = R"html(
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAIPO UTM Dashboard</title>
+    <style>
+        :root {
+            --bg1: #f3f7fb;
+            --bg2: #e9eef5;
+            --card: #ffffff;
+            --card-border: rgba(31, 41, 55, 0.10);
+            --text: #1f2937;
+            --muted: #5b6472;
+            --accent: #2563eb;
+            --accent2: #0f766e;
+            --danger-bg: #fde2e2;
+            --warn-bg: #fff3cd;
+            --ok-bg: #dcfce7;
+            --danger-text: #9f1239;
+            --warn-text: #92400e;
+            --ok-text: #166534;
+            --shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Cambria, serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.08), transparent 26%),
+                linear-gradient(135deg, var(--bg1), var(--bg2));
+            padding: 24px;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.86);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            padding: 34px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-align: center;
+            color: #111827;
+        }
+
+        .subtitle {
+            margin: 0 0 26px;
+            font-size: 18px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 22px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            background: var(--card);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1080px;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            border-right: 1px solid rgba(15, 23, 42, 0.06);
+            vertical-align: top;
+            text-align: left;
+        }
+
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #f8fafc;
+            text-align: center;
+            font-size: 16px;
+            letter-spacing: 0.2px;
+            color: #0f172a;
+        }
+
+        tbody tr td {
+            background: #ffffff;
+        }
+
+        tr:hover td {
+            background: #f1f7ff;
+        }
+
+        td {
+            font-size: 15px;
+        }
+
+        td.danger {
+            background: var(--danger-bg);
+            color: var(--danger-text);
+            font-weight: 700;
+        }
+
+        td.warn {
+            background: var(--warn-bg);
+            color: var(--warn-text);
+            font-weight: 700;
+        }
+
+        td.ok {
+            background: var(--ok-bg);
+            color: var(--ok-text);
+            font-weight: 700;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        a:hover {
+            color: #1d4ed8;
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 18px;
+            font-size: 14px;
+            color: var(--muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h1>Данные УТМ</h1>
+        <p class="subtitle">Список устройств, сроки сертификатов и фактические адреса</p>
+
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>Имя</th>
+                    <th>ID ключа</th>
+                    <th>RSA записан</th>
+                    <th>RSA истекает</th>
+                    <th>GOST записан</th>
+                    <th>GOST истекает</th>
+                    <th>Фактический адрес (в ключе)</th>
+                </tr>
+)html";
 
             for (const auto &utm: m_utms) {
                 auto ip = utm.value("ip", "");
@@ -189,7 +339,15 @@ void UTMDashboard::run() {
                 utms_detail.pop();
             }
 
-            html += "</table></body></html>";
+            html += R"html(
+            </table>
+        </div>
+
+        <div class="footer">RAIPO UTM Dashboard</div>
+    </div>
+</body>
+</html>
+)html";
             syslog(LOG_DEBUG, "Обработка запроса завершена, итоговый результат:\n%s", html.c_str());
 
             res.set_content(html, "text/html; charset=utf-8");
