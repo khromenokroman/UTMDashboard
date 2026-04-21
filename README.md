@@ -1,5 +1,7 @@
 # UTM Dashboard
 
+![UTM preview](logo/logo.png)
+
 Веб-панель для просмотра данных по УТМ:
 
 - имя и адрес УТМ
